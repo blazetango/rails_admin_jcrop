@@ -15,10 +15,34 @@ module RailsAdmin
 
       @image_tag_options = {}
       @image_tag_options[:class] = "jcrop-subject"
-      @image_tag_options[:'data-geometry'] = geometry(@object.send(@field).path).join(",")
 
-      if @fit_image
-        fit_image_geometry = fit_image_geometry(@object.send(@field).path)
+      @file_path=''
+
+      if @object.send(@field).class.to_s =~ /Uploader/
+
+        if @object.send(@field)._storage.to_s =~ /Fog/
+
+          @file_path=@object.send(@field).url
+        else
+
+          @file_path=@object.send(@field).path
+        end
+
+      elsif @object.send(@field).class.to_s =~ /Paperclip/
+
+        if (@object.send(@field).options[:storage].to_s =='s3')
+
+          @file_path=@object.send(@field).url
+        else
+
+          @file_path=@object.send(@field).path
+        end
+      end
+
+      @image_tag_options[:'data-geometry'] = geometry(@file_path).join(",")
+
+      if @fit_image_geometry
+        fit_image_geometry = fit_image_geometry(@file_path)
 
         @form_options[:'style'] = "margin-left: #{375 - (fit_image_geometry[0]/2) - 15}px;"
 
